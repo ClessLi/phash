@@ -3,6 +3,7 @@
 package phash
 
 import (
+	"image"
 	"io"
 
 	"github.com/disintegration/imaging"
@@ -15,16 +16,29 @@ func GetHash(reader io.Reader) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	
+
 	image = imaging.Resize(image, 32, 32, imaging.Lanczos)
 	image = imaging.Grayscale(image)
-	
-	imageMatrixData := getImageMatrix(image)	
+
+	imageMatrixData := getImageMatrix(image)
 	dctMatrix := getDCTMatrix(imageMatrixData)
-	
+
 	smallDctMatrix := reduceMatrix(dctMatrix, 8)
 	dctMeanValue := calculateMeanValue(smallDctMatrix)
 	return buildHash(smallDctMatrix, dctMeanValue), nil
+}
+
+// GetHashByIMG returns a phash string for a JPEG image
+func GetHashByIMG(image image.Image) string {
+	image = imaging.Resize(image, 32, 32, imaging.Lanczos)
+	image = imaging.Grayscale(image)
+
+	imageMatrixData := getImageMatrix(image)
+	dctMatrix := getDCTMatrix(imageMatrixData)
+
+	smallDctMatrix := reduceMatrix(dctMatrix, 8)
+	dctMeanValue := calculateMeanValue(smallDctMatrix)
+	return buildHash(smallDctMatrix, dctMeanValue)
 }
 
 // GetDistance returns the hamming distance between two phashes
